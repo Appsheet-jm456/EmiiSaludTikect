@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ticket de Venta</title>
+    <style>
+        /* --- ESTILOS CSS PARA DARLE FORMATO AL TICKET --- */
+        body { font-family: 'Courier New', Courier, monospace; margin: 0; padding: 20px; background-color: #f4f4f4; }
+        .ticket { background-color: #fff; max-width: 320px; margin: 0 auto; padding: 20px; border: 1px dashed #ccc; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        .header, .footer { text-align: center; }
+        .header h2 { margin: 0; }
+        .header p { margin: 5px 0; }
+        .item-list table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        .item-list th, .item-list td { padding: 5px; font-size: 12px; }
+        .item-list .col-desc { width: 60%; text-align: left; }
+        .item-list .col-cant, .item-list .col-precio, .item-list .col-subtotal { width: 15%; text-align: right; }
+        .totals { margin-top: 20px; }
+        .totals p { display: flex; justify-content: space-between; margin: 5px 0; font-weight: bold; }
+        hr { border: none; border-top: 1px dashed #000; }
+    </style>
+</head>
+<body>
+
+    <div class="ticket">
+        <div class="header">
+            <h2>Emii Salud Farmacia</h2>
+            <p>NIT: 900.123.456-7</p>
+            <p>Cali, Valle del Cauca</p>
+            <hr>
+            <p><strong>Ticket de Venta:</strong> <span id="ticket-id"></span></p>
+            <p><strong>Fecha:</strong> <span id="fecha"></span></p>
+            <p><strong>Cliente:</strong> <span id="cliente"></span></p>
+            <hr>
+        </div>
+
+        <div class="item-list">
+            <table>
+                <thead>
+                    <tr>
+                        <th class="col-desc">Descripción</th>
+                        <th class="col-cant">Cant</th>
+                        <th class="col-precio">P. Unit</th>
+                        <th class="col-subtotal">Total</th>
+                    </tr>
+                </thead>
+                <tbody id="lista-items">
+                    </tbody>
+            </table>
+        </div>
+
+        <hr>
+        <div class="totals">
+            <p><span>SUBTOTAL:</span> <span id="subtotal"></span></p>
+            <p><span>IVA:</span> <span id="iva"></span></p>
+            <p><span>TOTAL A PAGAR:</span> <span id="total"></span></p>
+        </div>
+
+        <div class="footer">
+            <hr>
+            <p>¡Gracias por su compra!</p>
+        </div>
+    </div>
+
+    <script>
+        // --- LÓGICA JAVASCRIPT PARA LEER LA URL Y LLENAR EL TICKET ---
+        window.onload = function() {
+            // 1. LEER LOS PARÁMETROS DE LA URL
+            const params = new URLSearchParams(window.location.search);
+
+            // 2. OBTENER DATOS SIMPLES Y PONERLOS EN EL HTML
+            document.getElementById('ticket-id').innerText = params.get('ticket_id');
+            document.getElementById('fecha').innerText = params.get('fecha');
+            document.getElementById('cliente').innerText = params.get('cliente');
+            document.getElementById('subtotal').innerText = params.get('subtotal');
+            document.getElementById('iva').innerText = params.get('iva');
+            document.getElementById('total').innerText = params.gert('total');
+
+            // 3. PROCESAR LAS LISTAS DE PRODUCTOS
+            const cantidades = params.get('cantidades').split(',');
+            const descripciones = params.get('descripciones').split(',');
+            const precios = params.get('precios').split(',');
+            const subtotales = params.get('subtotales').split(',');
+
+            const tbody = document.getElementById('lista-items');
+
+            // 4. CREAR UNA FILA EN LA TABLA POR CADA PRODUCTO
+            for (let i = 0; i < descripciones.length; i++) {
+                let fila = `<tr>
+                                <td class="col-desc">${descripciones[i]}</td>
+                                <td class="col-cant">${cantidades[i]}</td>
+                                <td class="col-precio">${precios[i]}</td>
+                                <td class="col-subtotal">${subtotales[i]}</td>
+                            </tr>`;
+                tbody.innerHTML += fila;
+            }
+        };
+    </script>
+
+</body>
+</html>
