@@ -1,131 +1,60 @@
 <!DOCTYPE html>
-<html lang="es">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ticket de Venta</title>
+    <title>Ticket de Venta - Emii Salud</title>
     <style>
-        /* --- ESTILOS CSS PARA IMPRESORA TÉRMICA DE 58mm --- */
-        body { 
-            font-family: 'Courier New', Courier, monospace; 
-            font-size: 12px;
-            line-height: 1.4;
-            margin: 0; 
-            padding: 0; 
-            background-color: #fff; 
-        }
-        .ticket { 
-            width: 210px; /* Ancho aproximado para 58mm */
-            margin: 0 auto; 
-            padding: 10px;
-        }
-        .header, .footer { 
-            text-align: center; 
-        }
-        .header h2 { 
-            margin: 0; 
-            font-size: 14px;
-        }
-        .header p, .footer p { 
-            margin: 2px 0; 
-        }
-        .item-list {
-            margin: 15px 0;
-        }
-        .item {
-            margin-bottom: 5px;
-        }
-        .item .item-line-2 {
-            display: flex;
-            justify-content: space-between;
-        }
-        .totals { 
-            margin-top: 15px; 
-        }
-        .totals p { 
-            display: flex; 
-            justify-content: space-between; 
-            margin: 2px 0; 
-        }
-        .totals p span:first-child {
-            text-align: left;
-        }
-        .totals p span:last-child {
-            text-align: right;
-        }
-        hr { 
-            border: none; 
-            border-top: 1px dashed #000; 
-            margin: 10px 0;
-        }
+        body { font-family: 'Courier New', Courier, monospace; font-size: 12px; line-height: 1.4; color: #000; margin: 0; padding: 0; }
+        .ticket-box { width: 300px; padding: 15px; }
+        .header, .footer { text-align: center; }
+        .header h2 { margin: 0; font-size: 16px; }
+        .header p, .footer p { margin: 2px 0; }
+        .info p { margin: 2px 0; font-size: 11px; }
+        .item-list { margin: 15px 0; }
+        .item { margin-bottom: 8px; }
+        .item-line-2 { display: flex; justify-content: space-between; padding-left: 10px; }
+        .totals { margin-top: 15px; }
+        .totals p { display: flex; justify-content: space-between; margin: 2px 0; }
+        .totals .total-final p { font-weight: bold; font-size: 14px; }
+        hr { border: none; border-top: 1px dashed #000; margin: 10px 0; }
     </style>
 </head>
 <body>
-
-    <div class="ticket">
+    <div class="ticket-box">
         <div class="header">
             <h2>Emii Salud Farmacia</h2>
+            <p>Tu Direccion, Cali, Valle del Cauca</p>
             <p>NIT: 900.123.456-7</p>
-            <p>Cali, Valle del Cauca</p>
-            <hr>
-            <p><strong>Ticket:</strong> <span id="ticket-id"></span></p>
-            <p><strong>Fecha:</strong> <span id="fecha"></span></p>
-            <p><strong>Cliente:</strong> <span id="cliente"></span></p>
-            <hr>
         </div>
-
-        <div class="item-list" id="lista-items">
+        <hr>
+        <div class="info">
+            <p>Ticket: <<[FOLIO]>></p>
+            <p>Fecha: <<TEXT([Fecha], "DD/MM/YY")>> <<[Hora]>></p>
+            <p>Cliente: <<[ClienteID].[Nombre]>></p>
+        </div>
+        <hr>
+        <div class="item-list">
+            <<Start: [Related Detalle Ventas]>>
+            <div class="item">
+                <div class="item-line-1"><<[ProductoID].[Nombre]>></div>
+                <div class="item-line-2">
+                    <span><<[Cantidad]>> x <<[PrecioUnit]>></span>
+                    <span><<[TotalLinea]>></span>
+                </div>
             </div>
-
+            <<End>>
+        </div>
         <hr>
         <div class="totals">
-            <p><span>SUBTOTAL:</span> <span id="subtotal"></span></p>
-            <p><span>IVA:</span> <span id="iva"></span></p>
-            <p><strong><span>TOTAL:</span> <span id="total"></span></strong></p>
+            <p><span>Subtotal:</span> <span><<[Subtotal]>></span></p>
+            <p><span>Impuesto (IVA):</span> <span><<[Impuesto]>></span></p>
+            <div class="total-final">
+                <p><span>TOTAL:</span> <span><<[Total]>></span></p>
+            </div>
         </div>
-
         <div class="footer">
             <hr>
             <p>¡Gracias por su compra!</p>
         </div>
     </div>
-
-    <script>
-        // --- LÓGICA JAVASCRIPT ADAPTADA ---
-        window.onload = function() {
-            const params = new URLSearchParams(window.location.search);
-
-            // Llenar datos del encabezado
-            document.getElementById('ticket-id').innerText = params.get('ticket_id');
-            document.getElementById('fecha').innerText = params.get('fecha');
-            document.getElementById('cliente').innerText = params.get('cliente');
-            document.getElementById('subtotal').innerText = params.get('subtotal');
-            document.getElementById('iva').innerText = params.get('iva');
-            document.getElementById('total').innerText = params.get('total');
-
-            // Procesar las listas de productos
-            const cantidades = params.get('cantidades').split(',');
-            const descripciones = params.get('descripciones').split(',');
-            const precios = params.get('precios').split(',');
-            const subtotales = params.get('subtotales').split(',');
-
-            const divListaItems = document.getElementById('lista-items');
-            let itemsHTML = '';
-
-            // Crear el HTML para cada producto
-            for (let i = 0; i < descripciones.length; i++) {
-                let item = `<div class="item">
-                                <div class="item-line-1">${descripciones[i]}</div>
-                                <div class="item-line-2">
-                                    <span>${cantidades[i]} x ${precios[i]}</span>
-                                    <span>${subtotales[i]}</span>
-                                </div>
-                            </div>`;
-                itemsHTML += item;
-            }
-            divListaItems.innerHTML = itemsHTML;
-        };
-    </script>
-
 </body>
 </html>
