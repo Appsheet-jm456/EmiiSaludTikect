@@ -5,19 +5,59 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ticket de Venta</title>
     <style>
-        /* --- ESTILOS CSS PARA DARLE FORMATO AL TICKET --- */
-        body { font-family: 'Courier New', Courier, monospace; margin: 0; padding: 20px; background-color: #f4f4f4; }
-        .ticket { background-color: #fff; max-width: 320px; margin: 0 auto; padding: 20px; border: 1px dashed #ccc; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-        .header, .footer { text-align: center; }
-        .header h2 { margin: 0; }
-        .header p { margin: 5px 0; }
-        .item-list table { width: 100%; border-collapse: collapse; margin: 20px 0; }
-        .item-list th, .item-list td { padding: 5px; font-size: 12px; }
-        .item-list .col-desc { width: 60%; text-align: left; }
-        .item-list .col-cant, .item-list .col-precio, .item-list .col-subtotal { width: 15%; text-align: right; }
-        .totals { margin-top: 20px; }
-        .totals p { display: flex; justify-content: space-between; margin: 5px 0; font-weight: bold; }
-        hr { border: none; border-top: 1px dashed #000; }
+        /* --- ESTILOS CSS PARA IMPRESORA TÉRMICA DE 58mm --- */
+        body { 
+            font-family: 'Courier New', Courier, monospace; 
+            font-size: 12px;
+            line-height: 1.4;
+            margin: 0; 
+            padding: 0; 
+            background-color: #fff; 
+        }
+        .ticket { 
+            width: 210px; /* Ancho aproximado para 58mm */
+            margin: 0 auto; 
+            padding: 10px;
+        }
+        .header, .footer { 
+            text-align: center; 
+        }
+        .header h2 { 
+            margin: 0; 
+            font-size: 14px;
+        }
+        .header p, .footer p { 
+            margin: 2px 0; 
+        }
+        .item-list {
+            margin: 15px 0;
+        }
+        .item {
+            margin-bottom: 5px;
+        }
+        .item .item-line-2 {
+            display: flex;
+            justify-content: space-between;
+        }
+        .totals { 
+            margin-top: 15px; 
+        }
+        .totals p { 
+            display: flex; 
+            justify-content: space-between; 
+            margin: 2px 0; 
+        }
+        .totals p span:first-child {
+            text-align: left;
+        }
+        .totals p span:last-child {
+            text-align: right;
+        }
+        hr { 
+            border: none; 
+            border-top: 1px dashed #000; 
+            margin: 10px 0;
+        }
     </style>
 </head>
 <body>
@@ -28,32 +68,20 @@
             <p>NIT: 900.123.456-7</p>
             <p>Cali, Valle del Cauca</p>
             <hr>
-            <p><strong>Ticket de Venta:</strong> <span id="ticket-id"></span></p>
+            <p><strong>Ticket:</strong> <span id="ticket-id"></span></p>
             <p><strong>Fecha:</strong> <span id="fecha"></span></p>
             <p><strong>Cliente:</strong> <span id="cliente"></span></p>
             <hr>
         </div>
 
-        <div class="item-list">
-            <table>
-                <thead>
-                    <tr>
-                        <th class="col-desc">Descripción</th>
-                        <th class="col-cant">Cant</th>
-                        <th class="col-precio">P. Unit</th>
-                        <th class="col-subtotal">Total</th>
-                    </tr>
-                </thead>
-                <tbody id="lista-items">
-                    </tbody>
-            </table>
-        </div>
+        <div class="item-list" id="lista-items">
+            </div>
 
         <hr>
         <div class="totals">
             <p><span>SUBTOTAL:</span> <span id="subtotal"></span></p>
             <p><span>IVA:</span> <span id="iva"></span></p>
-            <p><span>TOTAL A PAGAR:</span> <span id="total"></span></p>
+            <p><strong><span>TOTAL:</span> <span id="total"></span></strong></p>
         </div>
 
         <div class="footer">
@@ -63,37 +91,39 @@
     </div>
 
     <script>
-        // --- LÓGICA JAVASCRIPT PARA LEER LA URL Y LLENAR EL TICKET ---
+        // --- LÓGICA JAVASCRIPT ADAPTADA ---
         window.onload = function() {
-            // 1. LEER LOS PARÁMETROS DE LA URL
             const params = new URLSearchParams(window.location.search);
 
-            // 2. OBTENER DATOS SIMPLES Y PONERLOS EN EL HTML
+            // Llenar datos del encabezado
             document.getElementById('ticket-id').innerText = params.get('ticket_id');
             document.getElementById('fecha').innerText = params.get('fecha');
             document.getElementById('cliente').innerText = params.get('cliente');
             document.getElementById('subtotal').innerText = params.get('subtotal');
             document.getElementById('iva').innerText = params.get('iva');
-            document.getElementById('total').innerText = params.gert('total');
+            document.getElementById('total').innerText = params.get('total');
 
-            // 3. PROCESAR LAS LISTAS DE PRODUCTOS
+            // Procesar las listas de productos
             const cantidades = params.get('cantidades').split(',');
             const descripciones = params.get('descripciones').split(',');
             const precios = params.get('precios').split(',');
             const subtotales = params.get('subtotales').split(',');
 
-            const tbody = document.getElementById('lista-items');
+            const divListaItems = document.getElementById('lista-items');
+            let itemsHTML = '';
 
-            // 4. CREAR UNA FILA EN LA TABLA POR CADA PRODUCTO
+            // Crear el HTML para cada producto
             for (let i = 0; i < descripciones.length; i++) {
-                let fila = `<tr>
-                                <td class="col-desc">${descripciones[i]}</td>
-                                <td class="col-cant">${cantidades[i]}</td>
-                                <td class="col-precio">${precios[i]}</td>
-                                <td class="col-subtotal">${subtotales[i]}</td>
-                            </tr>`;
-                tbody.innerHTML += fila;
+                let item = `<div class="item">
+                                <div class="item-line-1">${descripciones[i]}</div>
+                                <div class="item-line-2">
+                                    <span>${cantidades[i]} x ${precios[i]}</span>
+                                    <span>${subtotales[i]}</span>
+                                </div>
+                            </div>`;
+                itemsHTML += item;
             }
+            divListaItems.innerHTML = itemsHTML;
         };
     </script>
 
