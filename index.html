@@ -10,8 +10,6 @@
         .header h2 { margin: 0; font-size: 14px; font-weight: bold; }
         .header p, .footer p, .info p { margin: 2px 0; }
         .item-list-header { display: flex; justify-content: space-between; font-weight: bold; border-bottom: 1px dashed #000; padding-bottom: 5px; margin-bottom: 5px; }
-        .item-list-header .desc { text-align: left; }
-        .item-list-header .qty, .item-list-header .total { text-align: right; }
         .item { margin-bottom: 5px; }
         .item-line-2 { display: flex; justify-content: space-between; padding-left: 8px; }
         .totals { margin-top: 15px; }
@@ -35,9 +33,9 @@
         </div>
         <hr>
         <div class="item-list-header">
-            <span class="desc">Producto</span>
-            <span class="qty">Cant</span>
-            <span class="total">Total</span>
+            <span>Producto</span>
+            <span>Cant</span>
+            <span>Total</span>
         </div>
         <div class="item-list" id="lista-items">
         </div>
@@ -57,7 +55,16 @@
 
     <script>
         window.onload = function() {
+            // --- INICIO DE LA MEJORA ---
+            // 1. CREAMOS UN FORMATEADOR DE MONEDA PARA COLOMBIA (COP)
+            const formatter = new Intl.NumberFormat('es-CO', {
+                style: 'currency',
+                currency: 'COP',
+                minimumFractionDigits: 0 // Si no quieres decimales, usa 0. Si quieres dos, usa 2.
+            });
+
             const params = new URLSearchParams(window.location.search);
+            
             document.getElementById('nombre-empresa').innerText = params.get('empresa') || 'Emii Salud Farmacia';
             document.getElementById('direccion-empresa').innerText = params.get('direccion') || 'Tu Direccion, Cali';
             document.getElementById('nit-empresa').innerText = params.get('nit') || 'NIT: 900.123.456-7';
@@ -65,10 +72,10 @@
             document.getElementById('fecha').innerText = params.get('fecha');
             document.getElementById('cliente').innerText = params.get('cliente');
 
-            // --- JAVASCRIPT CORREGIDO PARA TOTALES ---
-            document.getElementById('total_pos').innerText = params.get('total_pos');
-            document.getElementById('efectivo_recibido').innerText = params.get('efectivo_recibido');
-            document.getElementById('devueltas').innerText = params.get('devueltas');
+            // 2. APLICAMOS EL FORMATO A CADA VALOR NUMÉRICO
+            document.getElementById('total_pos').innerText = formatter.format(params.get('total_pos') || 0);
+            document.getElementById('efectivo_recibido').innerText = formatter.format(params.get('efectivo_recibido') || 0);
+            document.getElementById('devueltas').innerText = formatter.format(params.get('devueltas') || 0);
 
             const cantidades = (params.get('cantidades') || '').split(',');
             const descripciones = (params.get('descripciones') || '').split(',');
@@ -80,11 +87,12 @@
 
             if (descripciones.length > 0 && descripciones[0]) {
                 for (let i = 0; i < descripciones.length; i++) {
+                    // 3. APLICAMOS EL FORMATO DENTRO DEL BUCLE DE PRODUCTOS
                     let item = `<div class="item">
-                                    <div class="item-line-1">${descripciones[i]}</div>
+                                    <div>${descripciones[i]}</div>
                                     <div class="item-line-2">
-                                        <span>${cantidades[i]} x ${precios[i]}</span>
-                                        <span>${totalesLinea[i]}</span>
+                                        <span>${cantidades[i]} x ${formatter.format(precios[i] || 0)}</span>
+                                        <span>${formatter.format(totalesLinea[i] || 0)}</span>
                                     </div>
                                 </div>`;
                     itemsHTML += item;
