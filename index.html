@@ -1,54 +1,60 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-    <title>Ticket de Venta - Emii Salud</title>
+    <meta charset="UTF-8" />
+    <title>Ticket de Venta</title>
     <style>
-        body { font-family: 'Courier New', Courier, monospace; font-size: 12px; line-height: 1.4; color: #000; margin: 0; padding: 0; }
-        .ticket-box { width: 300px; padding: 15px; }
+        body { 
+            /* --- CAMBIO DE FUENTE --- */
+            font-family: Arial, sans-serif, 'Courier New', monospace; 
+            font-size: 11px; 
+            line-height: 1.4; 
+            color: #000; 
+            margin: 0; 
+            padding: 0; 
+        }
+        .ticket { width: 210px; padding: 10px; }
         .header, .footer { text-align: center; }
-        .header h2 { margin: 0; font-size: 16px; }
-        .header p, .footer p { margin: 2px 0; }
-        .info p { margin: 2px 0; font-size: 11px; }
-        .item-list { margin: 15px 0; }
-        .item { margin-bottom: 8px; }
-        .item-line-2 { display: flex; justify-content: space-between; padding-left: 10px; }
+        .header h2 { margin: 0; font-size: 14px; font-weight: bold; }
+        .header p, .footer p, .info p { margin: 2px 0; }
+        .item-list-header { display: flex; justify-content: space-between; font-weight: bold; border-bottom: 1px dashed #000; padding-bottom: 5px; margin-bottom: 5px; }
+        .item-list-header .desc { text-align: left; }
+        .item-list-header .qty, .item-list-header .total { text-align: right; }
+        .item { margin-bottom: 5px; }
+        .item-line-2 { display: flex; justify-content: space-between; padding-left: 8px; }
         .totals { margin-top: 15px; }
         .totals p { display: flex; justify-content: space-between; margin: 2px 0; }
-        .totals .total-final p { font-weight: bold; font-size: 14px; }
+        .totals .total-final p { font-weight: bold; font-size: 13px; }
         hr { border: none; border-top: 1px dashed #000; margin: 10px 0; }
     </style>
 </head>
 <body>
-    <div class="ticket-box">
+    <div class="ticket">
         <div class="header">
-            <h2>Emii Salud Farmacia</h2>
-            <p>Tu Direccion, Cali, Valle del Cauca</p>
-            <p>NIT: 900.123.456-7</p>
+            <h2 id="nombre-empresa"></h2>
+            <p id="direccion-empresa"></p>
+            <p id="nit-empresa"></p>
         </div>
         <hr>
         <div class="info">
-            <p>Ticket: <<[FOLIO]>></p>
-            <p>Fecha: <<TEXT([Fecha], "DD/MM/YY")>> <<[Hora]>></p>
-            <p>Cliente: <<[ClienteID].[Nombre]>></p>
+            <p>Ticket: <span id="ticket-id"></span></p>
+            <p>Fecha: <span id="fecha"></span></p>
+            <p>Cliente: <span id="cliente"></span></p>
         </div>
         <hr>
-        <div class="item-list">
-            <<Start: [Related Detalle Ventas]>>
-            <div class="item">
-                <div class="item-line-1"><<[ProductoID].[Nombre]>></div>
-                <div class="item-line-2">
-                    <span><<[Cantidad]>> x <<[PrecioUnit]>></span>
-                    <span><<[TotalLinea]>></span>
-                </div>
-            </div>
-            <<End>>
+        <div class="item-list-header">
+            <span class="desc">Producto</span>
+            <span class="qty">Cant</span>
+            <span class="total">Total</span>
         </div>
+        <div class="item-list" id="lista-items">
+            </div>
         <hr>
         <div class="totals">
-            <p><span>Subtotal:</span> <span><<[Subtotal]>></span></p>
-            <p><span>Impuesto (IVA):</span> <span><<[Impuesto]>></span></p>
+            <p><span>Subtotal:</span> <span id="subtotal"></span></p>
+            <p><span>Impuesto:</span> <span id="impuesto"></span></p>
             <div class="total-final">
-                <p><span>TOTAL:</span> <span><<[Total]>></span></p>
+                <p><span>TOTAL:</span> <span id="total"></span></p>
             </div>
         </div>
         <div class="footer">
@@ -56,5 +62,42 @@
             <p>¡Gracias por su compra!</p>
         </div>
     </div>
+
+    <script>
+        window.onload = function() {
+            const params = new URLSearchParams(window.location.search);
+            document.getElementById('nombre-empresa').innerText = params.get('empresa') || 'Emii Salud Farmacia';
+            document.getElementById('direccion-empresa').innerText = params.get('direccion') || 'Tu Direccion, Cali';
+            document.getElementById('nit-empresa').innerText = params.get('nit') || 'NIT: 900.123.456-7';
+            document.getElementById('ticket-id').innerText = params.get('folio');
+            document.getElementById('fecha').innerText = params.get('fecha');
+            document.getElementById('cliente').innerText = params.get('cliente');
+            document.getElementById('subtotal').innerText = params.get('subtotal');
+            document.getElementById('impuesto').innerText = params.get('impuesto');
+            document.getElementById('total').innerText = params.get('total');
+
+            const cantidades = (params.get('cantidades') || '').split(',');
+            const descripciones = (params.get('descripciones') || '').split(',');
+            const precios = (params.get('precios') || '').split(',');
+            const totalesLinea = (params.get('totales_linea') || '').split(',');
+            
+            const divListaItems = document.getElementById('lista-items');
+            let itemsHTML = '';
+
+            if (descripciones.length > 0 && descripciones[0]) {
+                for (let i = 0; i < descripciones.length; i++) {
+                    let item = `<div class="item">
+                                    <div class="item-line-1">${descripciones[i]}</div>
+                                    <div class="item-line-2">
+                                        <span>${cantidades[i]} x ${precios[i]}</span>
+                                        <span>${totalesLinea[i]}</span>
+                                    </div>
+                                </div>`;
+                    itemsHTML += item;
+                }
+            }
+            divListaItems.innerHTML = itemsHTML;
+        };
+    </script>
 </body>
 </html>
