@@ -2,17 +2,9 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8" />
-    <title>Ticket de Venta</title>
+    <title>Ticket de Venta POS</title>
     <style>
-        body { 
-            /* --- CAMBIO DE FUENTE --- */
-            font-family: Arial, sans-serif, 'Courier New', monospace; 
-            font-size: 11px; 
-            line-height: 1.4; 
-            color: #000; 
-            margin: 0; 
-            padding: 0; 
-        }
+        body { font-family: 'Courier New', monospace; font-size: 11px; line-height: 1.4; color: #000; margin: 0; padding: 0; }
         .ticket { width: 210px; padding: 10px; }
         .header, .footer { text-align: center; }
         .header h2 { margin: 0; font-size: 14px; font-weight: bold; }
@@ -48,13 +40,13 @@
             <span class="total">Total</span>
         </div>
         <div class="item-list" id="lista-items">
-            </div>
+        </div>
         <hr>
         <div class="totals">
-            <p><span>Subtotal:</span> <span id="subtotal"></span></p>
-            <p><span>Impuesto:</span> <span id="impuesto"></span></p>
+            <p><span>Total:</span> <span id="total_pos"></span></p>
+            <p><span>Efectivo:</span> <span id="efectivo_recibido"></span></p>
             <div class="total-final">
-                <p><span>TOTAL:</span> <span id="total"></span></p>
+                <p><span>Cambio:</span> <span id="devueltas"></span></p>
             </div>
         </div>
         <div class="footer">
@@ -72,9 +64,11 @@
             document.getElementById('ticket-id').innerText = params.get('folio');
             document.getElementById('fecha').innerText = params.get('fecha');
             document.getElementById('cliente').innerText = params.get('cliente');
-            document.getElementById('subtotal').innerText = params.get('subtotal');
-            document.getElementById('impuesto').innerText = params.get('impuesto');
-            document.getElementById('total').innerText = params.get('total');
+
+            // --- JAVASCRIPT CORREGIDO PARA TOTALES ---
+            document.getElementById('total_pos').innerText = params.get('total_pos');
+            document.getElementById('efectivo_recibido').innerText = params.get('efectivo_recibido');
+            document.getElementById('devueltas').innerText = params.get('devueltas');
 
             const cantidades = (params.get('cantidades') || '').split(',');
             const descripciones = (params.get('descripciones') || '').split(',');
